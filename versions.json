@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "niri": {
+    "tag": "v25.08",
+    "commit": "01be0e65f4eb91a9cd624ac0b76aaeab765c7294",
+    "url": "https://github.com/niri-wm/niri.git"
+  },
+  "hyprland": {
+    "config_series": "0.55",
+    "repository": "trixie-backports"
+  },
+  "font": {
+    "version": "v3.5.1",
+    "url": "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/Hack.zip",
+    "sha256": "fa24da7de7cefe7766614d27762570b20453c852fc1d5b657111666df9a5e449"
+  }
+}

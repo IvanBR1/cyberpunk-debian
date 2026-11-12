@@ -1,0 +1,4 @@
+# Controles nativos de Hyprland. Sin reemplazar componentes de GNOME.
+nwg-displays
+brightnessctl
+pavucontrol

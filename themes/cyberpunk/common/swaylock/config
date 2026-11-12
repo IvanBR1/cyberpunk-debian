@@ -1,0 +1,16 @@
+# Contraseña de Debian + Enter. Escape limpia el texto escrito.
+# El indicador visible evita confundir el bloqueo con una pantalla apagada.
+color=0b0914
+font=Hack Nerd Font
+indicator-idle-visible
+indicator-radius=90
+indicator-thickness=5
+show-keyboard-layout
+indicator-caps-lock
+ignore-empty-password
+show-failed-attempts
+ring-color=009dff
+ring-ver-color=ff00cc
+ring-wrong-color=ff3355
+inside-color=151020
+text-color=e6e0ff

@@ -1,0 +1,2 @@
+# Perfil generic: separado de pantalla y apariencia.
+# legacy_drm=@LEGACY_DRM@. Si se solicita, se exporta en el launcher antes de iniciar Hyprland.

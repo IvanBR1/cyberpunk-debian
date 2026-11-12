@@ -1,0 +1,4 @@
+# Debian 13; un paquete por línea.
+python3-gi
+gir1.2-gtk-3.0
+libgtk-layer-shell0

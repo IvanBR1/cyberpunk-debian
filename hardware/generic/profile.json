@@ -1,0 +1,5 @@
+{
+  "name": "generic",
+  "supports_legacy_drm": false,
+  "description": "Sin ajustes del hipervisor; válido para hardware físico"
+}

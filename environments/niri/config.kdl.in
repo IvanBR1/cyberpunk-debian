@@ -1,0 +1,44 @@
+// Cyberpunk: Super = tecla Windows. Teclado latinoamericano.
+input {
+    keyboard { xkb { layout "@KEYBOARD@"; }; }
+    touchpad { tap; natural-scroll; }
+}
+@NIRI_LAYOUT@
+prefer-no-csd
+@NIRI_DISPLAY@
+spawn-at-startup "python3" @RUNTIME_KDL@ "niri" "start"
+// LibreOffice usa GTK3/Wayland; su plugin se incluye en la lista de paquetes.
+environment {
+    SAL_USE_VCLPLUGIN "gtk3"
+}
+// LXPolkit se inicia desde xdg-autostart, proporcionado por el paquete.
+binds {
+    Mod+Return { spawn "python3" @RUNTIME_KDL@ "niri" "terminal"; }
+    Mod+D { spawn "python3" @RUNTIME_KDL@ "niri" "launcher"; }
+    Mod+E { spawn "thunar"; }
+    Mod+B { spawn "firefox-esr"; }
+    Mod+L { spawn "python3" @RUNTIME_KDL@ "niri" "lock"; }
+    Mod+Q { close-window; }
+    Mod+Left { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+Up { focus-window-up; }
+    Mod+Down { focus-window-down; }
+    Mod+Shift+Left { move-column-left; }
+    Mod+Shift+Right { move-column-right; }
+    Mod+Shift+Up { move-window-up; }
+    Mod+Shift+Down { move-window-down; }
+    Mod+Page_Down { focus-workspace-down; }
+    Mod+Page_Up { focus-workspace-up; }
+    Mod+Shift+Page_Down { move-window-to-workspace-down; }
+    Mod+Shift+Page_Up { move-window-to-workspace-up; }
+    Mod+F { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+    Mod+R { switch-preset-column-width; }
+    Mod+V { spawn "python3" @RUNTIME_KDL@ "niri" "clipboard"; }
+    Print { screenshot; }
+    Mod+A { spawn "python3" @RUNTIME_KDL@ "niri" "widgets"; }
+    Mod+Shift+E { quit; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "-l" "1.0" "@DEFAULT_AUDIO_SINK@" "5%+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-"; }
+    XF86AudioMute allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
+}

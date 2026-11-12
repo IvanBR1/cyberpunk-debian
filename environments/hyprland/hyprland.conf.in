@@ -1,0 +1,104 @@
+# Cyberpunk Hyprland — compatible con la configuración hyprlang de 0.55.x.
+# Blur y sombras dependen de la GPU, no de los GB de RAM. VMware: reduce passes/size si hay tirones.
+$mainMod = SUPER
+$theme = @ASSETS@
+$runtime = @RUNTIME@
+$terminal = python3 $runtime hyprland terminal
+$menu = python3 $runtime hyprland launcher
+source = @DISPLAY@
+source = @HARDWARE@
+source = @APPEARANCE@
+input {
+    kb_layout = @KEYBOARD@
+    follow_mouse = 1
+    touchpad {
+        natural_scroll = true
+        tap-to-click = true
+    }
+}
+general {
+    gaps_in = 6
+    gaps_out = 12
+    border_size = 3
+    layout = scrolling
+}
+scrolling {
+    column_width = 0.5
+    focus_fit_method = 1
+    fullscreen_on_one_column = true
+}
+animations {
+    enabled = true
+    bezier = cyber, 0.16, 1, 0.3, 1
+    animation = windows, 1, 3, cyber
+    animation = fade, 1, 3, default
+    animation = workspaces, 1, 3, cyber
+}
+misc {
+    disable_hyprland_logo = true
+    disable_splash_rendering = true
+    background_color = rgb(0b0914)
+}
+# Una sola barra: no se activa waybar.service.
+exec-once = python3 $runtime hyprland start
+bind = $mainMod, Return, exec, $terminal
+bind = $mainMod, D, exec, $menu
+bind = $mainMod, E, exec, thunar
+bind = $mainMod, B, exec, firefox-esr
+bind = $mainMod, Q, killactive,
+bind = $mainMod SHIFT, E, exit,
+bind = $mainMod, L, exec, python3 $runtime hyprland lock
+bind = $mainMod, F, fullscreen, 0
+bind = $mainMod, Space, togglefloating,
+bind = $mainMod, Left, movefocus, l
+bind = $mainMod, Right, movefocus, r
+bind = $mainMod, Up, movefocus, u
+bind = $mainMod, Down, movefocus, d
+bind = $mainMod SHIFT, Left, movewindow, l
+bind = $mainMod SHIFT, Right, movewindow, r
+bind = $mainMod SHIFT, Up, movewindow, u
+bind = $mainMod SHIFT, Down, movewindow, d
+bind = , Print, exec, sh -c 'grim -g "$(slurp)" - | wl-copy'
+bind = $mainMod, V, exec, python3 $runtime hyprland clipboard
+bindel = , XF86AudioRaiseVolume, exec, wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+
+bindel = , XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bindl = , XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+# Teclas multimedia estándar mediante MPRIS (playerctl).
+bindl = , XF86AudioPlay, exec, playerctl play-pause
+bindl = , XF86AudioPause, exec, playerctl pause
+bindl = , XF86AudioStop, exec, playerctl stop
+bindl = , XF86AudioNext, exec, playerctl next
+bindl = , XF86AudioPrev, exec, playerctl previous
+bindm = $mainMod, mouse:272, movewindow
+bindm = $mainMod, mouse:273, resizewindow
+bind = $mainMod, 1, workspace, 1
+bind = $mainMod SHIFT, 1, movetoworkspace, 1
+bind = $mainMod, 2, workspace, 2
+bind = $mainMod SHIFT, 2, movetoworkspace, 2
+bind = $mainMod, 3, workspace, 3
+bind = $mainMod SHIFT, 3, movetoworkspace, 3
+bind = $mainMod, 4, workspace, 4
+bind = $mainMod SHIFT, 4, movetoworkspace, 4
+bind = $mainMod, 5, workspace, 5
+bind = $mainMod SHIFT, 5, movetoworkspace, 5
+bind = $mainMod, 6, workspace, 6
+bind = $mainMod SHIFT, 6, movetoworkspace, 6
+bind = $mainMod, 7, workspace, 7
+bind = $mainMod SHIFT, 7, movetoworkspace, 7
+bind = $mainMod, 8, workspace, 8
+bind = $mainMod SHIFT, 8, movetoworkspace, 8
+bind = $mainMod, 9, workspace, 9
+bind = $mainMod SHIFT, 9, movetoworkspace, 9
+bind = $mainMod, 0, workspace, 10
+bind = $mainMod SHIFT, 0, movetoworkspace, 10
+
+# Cinta horizontal infinita, sin plugins. Super+R alterna ancho de columna.
+bind = $mainMod, R, layoutmsg, colresize +conf
+bind = $mainMod, C, layoutmsg, center
+bind = $mainMod, bracketright, layoutmsg, move +col
+bind = $mainMod, bracketleft, layoutmsg, move -col
+# Widgets: abrir/cerrar panel por encima de las ventanas.
+bind = $mainMod, A, exec, python3 $runtime hyprland widgets
+bind = $mainMod, mouse_down, workspace, e+1
+bind = $mainMod, mouse_up, workspace, e-1
+

@@ -1,0 +1,50 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 44,
+  "modules-left": [
+    "custom/launcher",
+    "niri/workspaces"
+  ],
+  "modules-center": [
+    "clock"
+  ],
+  "modules-right": [
+    "custom/dashboard",
+    "cpu",
+    "memory",
+    "pulseaudio",
+    "tray"
+  ],
+  "custom/launcher": {
+    "format": "󰣇  CYBER // NIRI",
+    "on-click": "python3 @RUNTIME@ niri launcher"
+  },
+  "clock": {
+    "format": "{:%Y-%m-%d  %H:%M}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>"
+  },
+  "cpu": {
+    "format": "CPU {usage}%",
+    "interval": 5
+  },
+  "memory": {
+    "format": "RAM {}%",
+    "interval": 10
+  },
+  "pulseaudio": {
+    "format": "VOL {volume}%",
+    "on-click": "pavucontrol"
+  },
+  "margin-top": 10,
+  "margin-left": 14,
+  "margin-right": 14,
+  "custom/dashboard": {
+    "format": "󰕮",
+    "tooltip-format": "Panel · Super+A",
+    "on-click": "python3 @RUNTIME@ niri widgets"
+  },
+  "niri/workspaces": {
+    "format": "{name}"
+  }
+}

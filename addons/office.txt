@@ -1,0 +1,4 @@
+# Debian 13; un paquete por línea.
+libreoffice-writer
+libreoffice-calc
+libreoffice-gtk3

@@ -1,0 +1,8 @@
+# Perfil vmware: separado de pantalla y apariencia.
+# legacy_drm=@LEGACY_DRM@. Si se solicita, se exporta en el launcher antes de iniciar Hyprland.
+
+# vmwgfx: evitar el plano de cursor KMS que puede quedar invisible.
+# Solo afecta al cursor; no desactiva aceleración 3D de las ventanas.
+cursor {
+    no_hardware_cursors = 1
+}

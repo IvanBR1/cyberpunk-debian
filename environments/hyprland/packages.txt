@@ -1,0 +1,5 @@
+# Debian 13; un paquete por línea.
+hyprland
+hyprland-guiutils
+xdg-desktop-portal-hyprland
+xwayland

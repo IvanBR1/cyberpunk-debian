@@ -1,0 +1,5 @@
+{
+  "name": "vmware",
+  "supports_legacy_drm": true,
+  "description": "VMware Tools y compatibilidad optativa"
+}
