@@ -11,3 +11,8 @@ window#waybar { background: transparent; color: #e6e0ff; }
 #custom-dashboard { color: #ff66dd; }
 #pulseaudio { color: #80cfff; }
 tooltip { background: rgba(10,13,27,0.96); border: 1px solid #ff00cc; border-radius: 12px; }
+
+#battery { color: #80cfff; padding: 0 10px; }
+#battery.charging, #battery.full { color: #66e0bd; }
+#battery.warning:not(.charging) { color: #ffcc66; }
+#battery.critical:not(.charging) { color: #ff66dd; }

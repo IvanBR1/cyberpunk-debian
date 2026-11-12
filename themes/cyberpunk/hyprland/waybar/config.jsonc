@@ -14,6 +14,7 @@
     "cpu",
     "memory",
     "pulseaudio",
+    "battery",
     "tray"
   ],
   "custom/launcher": {
@@ -47,5 +48,16 @@
     "format": "󰕮",
     "tooltip-format": "Panel · Super+A",
     "on-click": "python3 @RUNTIME@ hyprland widgets"
+  },
+  "battery": {
+    "interval": 30,
+    "states": {
+      "warning": 25,
+      "critical": 10
+    },
+    "format": "BAT {capacity}%",
+    "format-charging": "BAT + {capacity}%",
+    "format-full": "BAT {capacity}%",
+    "tooltip-format": "Batería: {capacity}% · {timeTo}"
   }
 }

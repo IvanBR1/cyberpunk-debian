@@ -14,6 +14,7 @@
     "cpu",
     "memory",
     "pulseaudio",
+    "battery",
     "tray"
   ],
   "custom/launcher": {
@@ -46,5 +47,16 @@
   },
   "niri/workspaces": {
     "format": "{name}"
+  },
+  "battery": {
+    "interval": 30,
+    "states": {
+      "warning": 25,
+      "critical": 10
+    },
+    "format": "BAT {capacity}%",
+    "format-charging": "BAT + {capacity}%",
+    "format-full": "BAT {capacity}%",
+    "tooltip-format": "Batería: {capacity}% · {timeTo}"
   }
 }

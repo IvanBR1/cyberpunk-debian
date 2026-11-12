@@ -268,3 +268,10 @@ Siguiente y Anterior mediante `playerctl` y MPRIS. Funcionan en reproductores
 compatibles como Spotify; las funciones disponibles dependen del reproductor.
 También funcionan con la pantalla bloqueada, igual que las teclas de volumen.
 Según el teclado puede ser necesario mantener Fn.
+
+### Batería en Waybar
+
+Las barras de Hyprland y Niri muestran `BAT` con el porcentaje, un signo `+`
+al cargar y el tiempo estimado al pasar el cursor. Cambia de color por debajo
+del 25% y del 10%. Usa el módulo nativo `battery`, con detección automática,
+sin fijar BAT0 ni instalar servicios adicionales.
