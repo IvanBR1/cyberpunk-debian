@@ -16,7 +16,7 @@ binds {
     Mod+Return { spawn "python3" @RUNTIME_KDL@ "niri" "terminal"; }
     Mod+D { spawn "python3" @RUNTIME_KDL@ "niri" "launcher"; }
     Mod+E { spawn "thunar"; }
-    Mod+B { spawn "firefox-esr"; }
+    Mod+B { spawn "@BROWSER@"; }
     Mod+L { spawn "python3" @RUNTIME_KDL@ "niri" "lock"; }
     Mod+Q { close-window; }
     Mod+Left { focus-column-left; }

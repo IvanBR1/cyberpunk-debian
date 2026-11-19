@@ -1,6 +1,7 @@
 """Composición de entorno + hardware + apariencia. No escribe en la máquina."""
 import json
 import os
+from platform import freedesktop_os_release
 from pathlib import Path
 import shlex
 from state import File
@@ -37,6 +38,8 @@ def make_files(root, layout, desktop, profile, theme, addons, keyboard, resoluti
     values={'ASSETS':asset,'RUNTIME':layout.runtime,'RUNTIME_KDL':json.dumps(str(layout.runtime)),
             'DESKTOP':desktop,'DISPLAY':display,'HARDWARE':hardware,'APPEARANCE':appearance,'KEYBOARD':keyboard}
     files=[]
+    browser = 'firefox' if freedesktop_os_release()['ID'] in ('fedora','ubuntu') else 'firefox-esr'
+    values['BROWSER'] = browser
     def add(path, data, mode=0o644, system=False):
         files.append(File(Path(path),data.encode() if isinstance(data,str) else data,mode,system))
     add(layout.runtime,(root/'scripts/runtime.py').read_bytes(),0o755)

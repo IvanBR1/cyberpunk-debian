@@ -118,6 +118,24 @@ def stable_and_backports(args,profile,addons):
             if args.niri_source=='build' or not shutil.which('niri'):
                 stable+=load_packages(ROOT,['environments/niri/build-packages.txt'])
     if args.login_manager=='greetd': stable+=['greetd','tuigreet']
+    distro=os_release().get('ID')
+    if distro in ('ubuntu','fedora'):
+        aliases={'firefox-esr':'firefox'}
+        if distro=='fedora':
+            aliases.update({
+                'dbus-user-session':'dbus-daemon','libpam-systemd':'systemd-pam','polkitd':'polkit',
+                'mako-notifier':'mako','pipewire-pulse':'pipewire-pulseaudio','libpam-gnome-keyring':'gnome-keyring-pam',
+                'fonts-noto-color-emoji':'google-noto-color-emoji-fonts','libgl1-mesa-dri':'mesa-dri-drivers',
+                'xwayland':'xorg-x11-server-Xwayland','python3-gi':'python3-gobject','gir1.2-gtk-3.0':'gtk3',
+                'libgtk-layer-shell0':'gtk-layer-shell','python3-gi-cairo':'python3-gobject','libreoffice-gtk3':'libreoffice-gtk3',
+                'build-essential':'gcc gcc-c++ make','rustc':'rust','libudev-dev':'systemd-devel',
+                'libgbm-dev':'mesa-libgbm-devel','libxkbcommon-dev':'libxkbcommon-devel','libegl1-mesa-dev':'mesa-libEGL-devel',
+                'libwayland-dev':'wayland-devel','libinput-dev':'libinput-devel','libdbus-1-dev':'dbus-devel',
+                'libsystemd-dev':'systemd-devel','libseat-dev':'libseat-devel','libpipewire-0.3-dev':'pipewire-devel',
+                'libpango1.0-dev':'pango-devel','libdisplay-info-dev':'libdisplay-info-devel','libclang-dev':'clang-devel',
+                'tuigreet':'greetd-tuigreet','open-vm-tools-desktop':'open-vm-tools-desktop'})
+        stable=[name for item in stable+backports for name in aliases.get(item,item).split()]
+        backports=[]
     return list(dict.fromkeys(stable)),list(dict.fromkeys(backports))
 
 def ensure_backports():
@@ -131,9 +149,12 @@ def ensure_backports():
 
 def install_packages(args,profile,addons):
     release=os_release()
-    if release.get('ID')!='debian' or release.get('VERSION_ID')!='13':
+    if release.get('ID') not in ('ubuntu','fedora') and (release.get('ID')!='debian' or release.get('VERSION_ID')!='13'):
         raise RuntimeError('Instalación de paquetes disponible para Debian 13. En otra distribución usa --configure-only con las dependencias instaladas.')
     stable,backports=stable_and_backports(args,profile,addons)
+    if release.get('ID')=='fedora':
+        call(['sudo','dnf','--setopt=strict=True','install','-y',*stable])
+        return
     call(['sudo','-v'])
     if backports: ensure_backports()
     call(['sudo','apt-get','update'])
