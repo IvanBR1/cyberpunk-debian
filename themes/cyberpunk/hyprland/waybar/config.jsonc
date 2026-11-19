@@ -22,6 +22,7 @@
     "on-click": "python3 @RUNTIME@ hyprland launcher"
   },
   "clock": {
+    "timezone": "America/Mexico_City",
     "format": "{:%Y-%m-%d  %H:%M}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>"
   },
@@ -46,7 +47,7 @@
   "margin-right": 14,
   "custom/dashboard": {
     "format": "󰕮",
-    "tooltip-format": "Panel · Super+A",
+    "tooltip-format": "Panel de controles",
     "on-click": "python3 @RUNTIME@ hyprland widgets"
   },
   "battery": {

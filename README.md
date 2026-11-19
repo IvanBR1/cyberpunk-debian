@@ -275,3 +275,27 @@ Las barras de Hyprland y Niri muestran `BAT` con el porcentaje, un signo `+`
 al cargar y el tiempo estimado al pasar el cursor. Cambia de color por debajo
 del 25% y del 10%. Usa el módulo nativo `battery`, con detección automática,
 sin fijar BAT0 ni instalar servicios adicionales.
+
+### Panel visual de widgets
+
+El complemento `widgets` incluye gráficas reales de CPU/RAM y transferencia de
+red (historial de los últimos 120 segundos), temperatura disponible, disco,
+batería, brillo, volumen, reproducción MPRIS y calendario desplegable. Los indicadores de temperatura, batería y brillo dependen del hardware disponible.
+El tráfico de red suma interfaces salvo loopback; incluye interfaces virtuales,
+por lo que no representa exclusivamente tráfico de Internet.
+
+Se mantiene GTK3 y gtk-layer-shell; las gráficas se dibujan con Gtk.DrawingArea
+y Cairo. No se instala otra shell de escritorio. El panel aparece detrás de las
+ventanas; el botón de Waybar permite traerlo al frente. No muestra instrucciones
+de teclado. Su altura se adapta al monitor con desplazamiento si es necesario.
+El calendario y los controles del panel necesitan traerlo al frente para poder
+interactuar cuando una ventana lo cubre. Los gráficos se actualizan cada dos
+segundos y los controles multimedia cada cuatro; no consultan servicios externos.
+
+Catálogos y documentación consultados (componentes reales):
+- [Eww: graph y circular-progress](https://elkowar.github.io/eww/widgets.html).
+- [Waybar: módulos nativos](https://github.com/Alexays/Waybar).
+- [GTK3 DrawingArea y Cairo](https://docs.gtk.org/gtk3/class.DrawingArea.html).
+
+La implementación amplía los widgets propios del kit con la API GTK documentada;
+no copia ni instala paquetes de widgets de terceros.

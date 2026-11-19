@@ -59,7 +59,7 @@ def make_files(root, layout, desktop, profile, theme, addons, keyboard, resoluti
     add(asset/'session.json',json.dumps(settings,indent=2)+'\n')
     for group in ['common',desktop]:
         for source in sorted((root/'themes/cyberpunk'/group).rglob('*')):
-            if not source.is_file(): continue
+            if not source.is_file() or '__pycache__' in source.parts or source.suffix=='.pyc': continue
             rel=source.relative_to(root/'themes/cyberpunk'/group)
             if rel.parts[0]=='widgets' and 'widgets' not in addons: continue
             if rel.parts[0]=='wallpapers' and theme!='cyberpunk': continue
@@ -104,7 +104,7 @@ def make_files(root, layout, desktop, profile, theme, addons, keyboard, resoluti
     if 'controls' in addons:
         data['modules-right'].insert(0,'custom/displays')
         data['modules-right'].insert(1,'backlight')
-        data['custom/displays']={'format':'DISP','tooltip-format':'Ordenar pantallas · Super+P','on-click':'nwg-displays -m '+shlex.quote(str(display))}
+        data['custom/displays']={'format':'DISP','tooltip-format':'Ordenar pantallas','on-click':'nwg-displays -m '+shlex.quote(str(display))}
         data['backlight']={'format':'BRI {percent}%','tooltip-format':'Brillo del panel interno: {percent}% · rueda para ajustar','on-scroll-up':'brightnessctl -c backlight set +5%','on-scroll-down':'brightnessctl -c backlight --min-value=1 set 5%-'}
         data['pulseaudio'].update({'format-muted':'VOL mute','scroll-step':5,'max-volume':100,'on-click-right':'wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle'})
     bar.data=(json.dumps(data,ensure_ascii=False,indent=2)+'\n').encode()
