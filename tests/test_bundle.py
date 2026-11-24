@@ -61,6 +61,15 @@ class BundleTests(unittest.TestCase):
                 execute.assert_called_once_with('foot',['foot'])
     def test_controls_reject_niri(self):
         with self.assertRaises(ValueError):self.render(extra=['--addons','controls'])
+    def test_niri_brightness_keys_have_dependency(self):
+        args=self.options('--desktop','niri','--addons','none')
+        files=render_all(self.layout,args)['niri']
+        config=next(f.data for f in files if f.path.name=='config.kdl')
+        self.assertIn(b'XF86MonBrightnessUp',config)
+        self.assertIn(b'XF86MonBrightnessDown',config)
+        self.assertIn(b'"--min-value=1"',config)
+        stable,_=stable_and_backports(args,'generic',[])
+        self.assertIn('brightnessctl',stable)
     def test_bluetooth_addon_is_installed_by_default(self):
         args=self.options()
         stable,_=stable_and_backports(args,'generic',resolve_options(args)[1])

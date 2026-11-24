@@ -379,7 +379,8 @@ la configuración conserva `xdg-desktop-portal-gtk` como FileChooser.
 `lxpolkit` sigue siendo común: Niri lo inicia mediante XDG autostart y
 Hyprland mediante el servicio de sesión.
 `wl-clipboard` se solicita por el historial opcional o la captura de Hyprland;
-`brightnessctl` pertenece a `controls`. Los servicios de barra, notificaciones,
+`brightnessctl` se instala con Niri para las teclas de brillo y con el
+complemento `controls` de Hyprland. Los servicios de barra, notificaciones,
 bloqueo, inactividad y audio siguen siendo parte de la sesión configurada.
 Wayland no sustituye por sí solo esos servicios.
 
