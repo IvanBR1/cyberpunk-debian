@@ -107,5 +107,6 @@ class State:
             elif record['system']:
                 subprocess.run(['sudo','rm','-f','--',str(path)],check=True)
             else: path.unlink(missing_ok=True)
-        self.save(desktop,{'schema':1,'files':list(reversed(remaining))})
+        doc['files']=list(reversed(remaining))
+        self.save(desktop,doc)
         return not remaining

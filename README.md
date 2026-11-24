@@ -86,11 +86,14 @@ capacidades propias: el tema no añade blur que el compositor no proporciona.
 Super+A muestra los widgets; Super+D abre el lanzador; Super+Enter la terminal.
 En Hyprland, Super+R cambia ancho de columna y Super+C centra la cinta scrolling.
 
-Complementos predeterminados: `office,widgets,clipboard`.
+Complementos predeterminados: `office,widgets,clipboard,bluetooth`.
 
 - **office:** Writer, Calc y `libreoffice-gtk3`, con backend GTK3 para Wayland.
 - **widgets:** reloj, calendario, CPU, RAM, uptime y controles MPRIS; sin APIs externas.
 - **clipboard:** historial de texto local con cliphist; puede contener información privada.
+- **bluetooth:** BlueZ y el gestor gráfico Blueman. Al retirar el último perfil,
+  la purga incluye solo los paquetes que el kit haya instalado; conserva BlueZ
+  si ya estaba presente.
 
 La pantalla se almacena por separado en
 `~/.config/cyberpunk-desktop/hardware/`. `--resolution preserve` conserva las reglas
@@ -142,7 +145,7 @@ Tras instalar, guarda tu trabajo y selecciona la sesión correspondiente al entr
 # Restaurar originales y quitar lo que no existía antes
 ./uninstall.sh --desktop niri --apply
 
-# Limpiar ambos, sus paquetes exclusivos, respaldos y caché de este kit
+# Limpiar ambos, los paquetes que instaló el kit, respaldos y caché
 ./uninstall.sh --desktop both --purge-packages --delete-backups \
   --remove-shared --purge-cache --apply
 ```
@@ -150,10 +153,17 @@ Tras instalar, guarda tu trabajo y selecciona la sesión correspondiente al entr
 Antes de aplicar, cierra el escritorio seleccionado y entra en GNOME o una TTY.
 No basta con cambiar de TTY dejando esa sesión en ejecución.
 
-`--purge-packages` se limita a paquetes instalados exclusivos del entorno.
+En Debian y Ubuntu se purgan por defecto los paquetes exclusivos del entorno.
+Durante la instalación, el kit registra los paquetes que APT añadió, incluidas
+sus dependencias. Con `--remove-shared --purge-packages`, también purga esos
+paquetes registrados cuando se retira el último entorno. Nunca incluye en esa
+lista paquetes que ya estaban instalados antes de ejecutar el kit. Usa
+`--keep-packages` para retirar solo su configuración. Si ya retiraste el
+perfil y todavía ves Hyprland en el selector, ejecuta
+`./uninstall.sh --desktop hyprland --apply` desde otro escritorio o una TTY.
 APT se simula y se cancela si propone eliminar otro paquete o instalar/actualizar
-algo. No ejecuta autoremove: Wayland, Xwayland, audio, red, LibreOffice y bibliotecas
-compartidas quedan instalados. Un Niri compilado por este kit se elimina como
+algo. No ejecuta autoremove. Los paquetes que ya existían, como los necesarios
+para GNOME Wayland en esta máquina, quedan fuera del registro. Un Niri compilado por este kit se elimina como
 archivo administrado; un Niri preexistente de otra instalación se conserva.
 
 Los archivos modificados después se conservan por defecto. `--force` permite
@@ -263,6 +273,10 @@ No se reinician servicios, no se descarga `btusb` ni se borran parejas.
 
 ### Teclas multimedia
 
+En el host Hyprland, enfoca la consola de VMware y pulsa **Super + Esc**
+para suspender los atajos habituales del compositor. La misma combinación
+reactiva los atajos. El modo sigue activo si cambias de ventana.
+
 Hyprland incluye las teclas estándar Reproducir/Pausar, Pausa, Detener,
 Siguiente y Anterior mediante `playerctl` y MPRIS. Funcionan en reproductores
 compatibles como Spotify; las funciones disponibles dependen del reproductor.
@@ -299,3 +313,64 @@ Catálogos y documentación consultados (componentes reales):
 
 La implementación amplía los widgets propios del kit con la API GTK documentada;
 no copia ni instala paquetes de widgets de terceros.
+### Lienzo infinito con driftwm
+
+El perfil opcional de driftwm añade una barra Cyberpunk con reloj, CPU, memoria
+y batería al lienzo bidimensional. En Debian 13, el instalador obtiene las
+dependencias con APT, instala Rust desde trixie-backports, compila DriftWM desde
+su repositorio oficial e instala el compositor y su sesión. Solicita sudo para
+los paquetes y archivos del sistema. Consulta también la
+[guía oficial](https://github.com/malbiruk/driftwm#build-from-source).
+Desde el repositorio, revisa el plan con `./setup.sh --desktop driftwm` y
+aplícalo con `./setup.sh --desktop driftwm --apply`. Con `--configure-only`
+se instala solo el perfil si DriftWM y Waybar ya existen. Ejecuta `driftwm` dentro
+de Wayland para probarlo en una ventana o elige driftwm al iniciar sesión.
+Super + arrastre izquierdo desplaza la vista. Super + rueda acerca y aleja
+alrededor del puntero. Super + 0 recupera el tamaño normal.
+
+Para retirarlo, revisa `./uninstall.sh --desktop driftwm` y aplica
+`./uninstall.sh --desktop driftwm --apply`. El manifiesto restaura archivos
+preexistentes y conserva cambios locales; `--force` permite restaurar pese a
+esos cambios y `--delete-backups` elimina respaldos después de una restauración
+completa. Los paquetes instalados como dependencias se conservan.
+
+### Cambiar, conservar y reparar escritorios
+
+Desde el repositorio, usa cualquiera de los nombres `hyprland`, `niri` o
+`driftwm` en los comandos siguientes. Sin `--apply` se muestra el plan.
+
+```bash
+./desktop.sh --help
+./desktop.sh status
+./desktop.sh switch niri
+./desktop.sh switch niri --keep --apply
+./desktop.sh switch hyprland keep --apply
+./desktop.sh switch driftwm --apply
+./desktop.sh backup hyprland --apply
+./desktop.sh restore hyprland
+./desktop.sh restore hyprland --apply
+```
+
+Con `keep` se agrega el destino y se conservan los demás perfiles. Sin él se
+retiran los perfiles Cyberpunk restantes después de preparar el destino.
+Los archivos anteriores al kit vuelven a su estado original. Se conservan
+dependencias compartidas y archivos personales. En sistemas APT también se
+retiran los paquetes exclusivos del perfil que se desinstala.
+Para retirar un escritorio
+en uso, cierra su sesión y ejecuta desde una TTY. Selecciona la nueva sesión
+en el gestor de acceso. Un destino ya instalado conserva sus opciones.
+
+Antes de experimentar, ejecuta `backup` con el nombre del perfil que funciona.
+`restore` repara sus archivos administrados aunque los hayas editado o borrado.
+Cada nuevo respaldo reemplaza el punto de recuperación de ese perfil. El
+respaldo abarca los archivos de su manifiesto, no los compartidos ni los
+archivos creados por otras aplicaciones. Vuelve a entrar en la sesión para
+cargar la configuración restaurada.
+### Extra opcional para VMware Workstation
+
+En el equipo anfitrión con Workstation instalado, `./vmware-modules.sh`
+muestra el plan para el kernel en uso. `./vmware-modules.sh --apply` instala
+las dependencias con APT (Debian/Ubuntu) o DNF (Fedora) y compila los módulos
+de VMware. Puedes repetirlo después de actualizar el kernel. Es independiente
+del compositor y de VMware Tools dentro de una máquina virtual. Las cabeceras
+y los módulos pertenecen al host y se comparten entre sesiones.

@@ -1,0 +1,8 @@
+* { font-family: "Hack Nerd Font", monospace; }
+window#waybar { background: transparent; color: #b2faff; }
+#clock { font-size: 76px; font-weight: bold; color: #ecffff;
+         text-shadow: 2px 2px #ba247e; }
+#clock.date { font-size: 18px; color: #71efff; }
+#cpu, #memory, #battery, #network, #pulseaudio, #tray { font-size: 13px;
+    padding: 0 5px; text-shadow: 0 1px 3px #070c24; }
+#memory { color: #ffa1dc; }

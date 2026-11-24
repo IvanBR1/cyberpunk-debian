@@ -23,7 +23,7 @@ from gi.repository import Gtk, Gdk, GLib
 
 RUNTIME = Path(GLib.get_user_runtime_dir())
 DESKTOP = os.environ.get('CYBERPUNK_DESKTOP', 'hyprland')
-if DESKTOP not in ('niri','hyprland'): raise SystemExit('Entorno inválido')
+if DESKTOP not in ('niri','hyprland','driftwm'): raise SystemExit('Entorno inválido')
 SOCKET = RUNTIME / f'cyberpunk-{DESKTOP}-widgets.sock'
 command = 'toggle' if '--toggle' in sys.argv else 'quit' if '--quit' in sys.argv else None
 if command:
@@ -107,6 +107,10 @@ calendar { color: #bac5df; font-size: 10px; padding: 4px; }
 calendar:selected { background: #009dff; color: #0b0914; }
 ''')
 Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+if DESKTOP == 'driftwm':
+    hud = Gtk.CssProvider()
+    hud.load_from_data(b'#panel { background: transparent; border: none; } #time { font-size: 60px; color: #a8edff; }')
+    Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),hud,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION+1)
 box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=7);box.set_name('panel')
 # Mantener acceso a todos los controles en pantallas de poca altura.
 scroll=Gtk.ScrolledWindow();scroll.set_policy(Gtk.PolicyType.NEVER,Gtk.PolicyType.AUTOMATIC)

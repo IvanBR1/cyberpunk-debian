@@ -46,6 +46,11 @@ bind = $mainMod, D, exec, $menu
 bind = $mainMod, E, exec, thunar
 bind = $mainMod, B, exec, @BROWSER@
 bind = $mainMod, Q, killactive,
+# VMware: dejar pasar los atajos a la ventana enfocada; repetir para salir.
+bind = $mainMod, Escape, submap, vmware
+submap = vmware
+bind = $mainMod, Escape, submap, reset
+submap = reset
 bind = $mainMod, H, movetoworkspacesilent, special:minimizadas
 bind = $mainMod SHIFT, H, togglespecialworkspace, minimizadas
 bind = $mainMod SHIFT, E, exit,

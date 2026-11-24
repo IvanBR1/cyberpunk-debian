@@ -13,7 +13,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 from render import Layout, make_files
 from state import File, State
-from manage import apt_guard, parser, resolve_options, render_all, validate, display_text
+from manage import apt_guard, parser, resolve_options, render_all, validate, display_text, stable_and_backports
 
 class BundleTests(unittest.TestCase):
     def setUp(self):
@@ -61,6 +61,14 @@ class BundleTests(unittest.TestCase):
                 execute.assert_called_once_with('foot',['foot'])
     def test_controls_reject_niri(self):
         with self.assertRaises(ValueError):self.render(extra=['--addons','controls'])
+    def test_bluetooth_addon_is_installed_by_default(self):
+        args=self.options()
+        stable,_=stable_and_backports(args,'generic',resolve_options(args)[1])
+        self.assertIn('bluez',stable)
+        self.assertIn('blueman',stable)
+        no_addons=self.options('--addons','none')
+        stable,_=stable_and_backports(no_addons,'generic',resolve_options(no_addons)[1])
+        self.assertNotIn('blueman',stable)
     def test_generic_has_no_vmware_environment_or_monitor(self):
         for fs in self.render().values():
             text='\n'.join(f.data.decode(errors='ignore') for f in fs if f.path.suffix in ('.conf','.kdl') or '.local/bin' in str(f.path))
@@ -123,6 +131,12 @@ class BundleTests(unittest.TestCase):
     def test_apt_allows_only_selected_packages(self): apt_guard('Purg hyprland [0.55]\n',['hyprland'])
     def test_apt_refuses_side_effect_upgrade(self):
         with self.assertRaises(RuntimeError): apt_guard('Inst libc6 [2.41]\n',['hyprland'])
+    def test_package_inventory_survives_file_restore(self):
+        state=State(self.home/'state');dest=self.home/'config'
+        state.write('shared',File(dest,b'managed'))
+        doc=state.load('shared');doc['packages']=['foot','waybar'];state.save('shared',doc)
+        self.assertTrue(state.restore('shared'))
+        self.assertEqual(state.load('shared')['packages'],['foot','waybar'])
     def test_backup_restores_original_and_preserves_unrelated_file(self):
         dest=self.home/'config';dest.write_text('original')
         other=self.home/'document';other.write_text('personal')

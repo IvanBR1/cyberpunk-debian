@@ -1,0 +1,3 @@
+# Gestor gráfico de Bluetooth para sesiones Wayland.
+bluez
+blueman

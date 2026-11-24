@@ -27,6 +27,9 @@ def installed(package):
     if not shutil.which('dpkg-query'): return False
     r=subprocess.run(['dpkg-query','-W','-f=${db:Status-Status}',package],capture_output=True,text=True)
     return r.returncode==0 and r.stdout=='installed'
+def installed_packages():
+    output=call(['dpkg-query','-W','-f=${binary:Package}\t${db:Status-Status}\n'],capture_output=True,text=True).stdout
+    return {line.split('\t',1)[0].split(':',1)[0] for line in output.splitlines() if line.endswith('\tinstalled')}
 def detect_profile():
     r=subprocess.run(['systemd-detect-virt'],capture_output=True,text=True) if shutil.which('systemd-detect-virt') else None
     return 'vmware' if r and r.stdout.strip()=='vmware' else 'generic'
@@ -44,7 +47,7 @@ def resolve_options(args):
         if not re.fullmatch(r'[1-9]\d{2,4}x[1-9]\d{2,4}(?:@\d+(?:\.\d+)?)?',args.resolution): raise ValueError('Resolución inválida.')
         if not args.output or not re.fullmatch(r'[a-zA-Z0-9_.-]+',args.output): raise ValueError('Indica --output con el nombre del monitor de esta máquina.')
     addons=[] if args.addons=='none' else list(dict.fromkeys(args.addons.split(',')))
-    if set(addons)-{'office','widgets','clipboard','controls'}: raise ValueError('Complemento desconocido.')
+    if set(addons)-{'office','widgets','clipboard','controls','bluetooth'}: raise ValueError('Complemento desconocido.')
     if 'controls' in addons and args.desktop!='hyprland':
         raise ValueError('El complemento controls requiere --desktop hyprland.')
     return profile,addons
@@ -182,7 +185,17 @@ def build_niri(layout,args):
         raise RuntimeError('El árbol fuente de Niri tiene cambios locales; no se compila automáticamente.')
     # Independiente de la cantidad de RAM: no inferir optimizaciones solo por GB.
     # --build-jobs permite limitar la compilación en máquinas pequeñas.
-    call(['/usr/bin/cargo','build','--locked','--release','--bin','niri','--jobs',str(args.build_jobs)],cwd=source)
+    env = os.environ.copy()
+    # Keep bindgen's parser and its C headers on the same LLVM release.
+    clang = shutil.which('clang')
+    if clang:
+        compiler = Path(clang).resolve()
+        library = compiler.parent.parent/'lib'
+        if (library/'libclang.so').is_file():
+            env.setdefault('CLANG_PATH', str(compiler))
+            env.setdefault('LIBCLANG_PATH', str(library))
+    env.setdefault('BINDGEN_EXTRA_CLANG_ARGS','-std=gnu17')
+    call(['/usr/bin/cargo','build','--locked','--release','--bin','niri','--jobs',str(args.build_jobs)],cwd=source,env=env)
     return File(layout.root/'niri/bin/niri',(source/'target/release/niri').read_bytes(),0o755)
 
 def font_files(layout):
@@ -230,7 +243,16 @@ def install(args):
     if not args.apply:
         print('PLAN: no se instaló ni reemplazó ningún archivo. Añade --apply para ejecutar.')
         return
-    if not args.configure_only: install_packages(args,profile,addons)
+    if not args.configure_only:
+        before=installed_packages() if shutil.which('dpkg-query') else set()
+        try:
+            install_packages(args,profile,addons)
+        finally:
+            if shutil.which('dpkg-query'):
+                state=State(layout.state)
+                doc=state.load('shared')
+                doc['packages']=sorted(set(doc.get('packages',[])) | (installed_packages()-before))
+                state.save('shared',doc)
     elif any(f.system and fingerprint(f.path)[1]!=f.digest for fs in groups.values() for f in fs): call(['sudo','-v'])
     binary=build_niri(layout,args)
     # Validar Niri recién compilado sin instalarlo previamente.
@@ -282,14 +304,15 @@ def apt_guard(text,allowed):
 
 def uninstall(args):
     layout=Layout();state=State(layout.state);chosen=desktops(args.desktop)
-    packages=[p for d in chosen for p in EXCLUSIVE[d] if installed(p)] if args.purge_packages else []
+    last=not any(state.load(d)['files'] for d in ('niri','hyprland') if d not in chosen)
+    tracked=state.load('shared').get('packages',[]) if args.purge_packages and args.remove_shared and last else []
+    packages=list(dict.fromkeys([p for d in chosen for p in EXCLUSIVE[d] if installed(p)]+[p for p in tracked if installed(p)])) if args.purge_packages else []
     docs={d:state.load(d) for d in chosen}
     for d,doc in docs.items():
         print(d+':')
         if not doc['files']: print('  Sin manifiesto: no se borrarán archivos ajenos. Para instalaciones antiguas usa scripts/legacy-uninstall.sh.')
         for f in doc['files']: print('  Restaurar original o quitar: '+f['path'])
         if args.delete_backups: print('  Borrar respaldos administrados de '+d+' después de restaurar.')
-    last=not any(state.load(d)['files'] for d in ('niri','hyprland') if d not in chosen)
     if args.remove_shared and not last: raise RuntimeError('El otro entorno sigue instalado; sus componentes compartidos se conservan.')
     if args.remove_shared:
         for f in state.load('shared')['files']: print('  Compartido administrado: '+f['path'])
@@ -319,13 +342,15 @@ def uninstall(args):
         elif args.delete_backups: print(f'Respaldos de {d} conservados: hay archivos modificados sin restaurar.')
     if args.remove_shared and all(not state.load(d)['files'] for d in ('niri','hyprland')):
         complete=state.restore('shared',force=args.force)
+        if complete and args.purge_packages:
+            doc=state.load('shared');doc['packages']=[];state.save('shared',doc)
         if args.delete_backups and complete:
             shutil.rmtree(layout.state/'backups/shared',ignore_errors=True)
             (layout.state/'manifests/shared.json').unlink(missing_ok=True)
     if args.purge_cache and last:
         shutil.rmtree(layout.home/'.cache/cyberpunk-desktop',ignore_errors=True)
     call(['systemctl','--user','daemon-reload'])
-    print('Limpieza terminada. Wayland, Xwayland, audio, LibreOffice y paquetes comunes se conservan.')
+    print('Limpieza terminada. APT solo purgó paquetes registrados o exclusivos autorizados por el plan.')
 
 
 def doctor(_args):
@@ -363,7 +388,7 @@ def parser():
     i=subs.add_parser('install');i.add_argument('--desktop',choices=['niri','hyprland','both'],required=True)
     i.add_argument('--profile',choices=['auto','generic','vmware'],default='auto')
     i.add_argument('--theme',choices=['cyberpunk','plain'],default='cyberpunk')
-    i.add_argument('--addons',default='office,widgets,clipboard',help='office,widgets,clipboard,controls o none')
+    i.add_argument('--addons',default='office,widgets,clipboard,bluetooth',help='office,widgets,clipboard,bluetooth,controls o none')
     i.add_argument('--keyboard',default='latam');i.add_argument('--resolution',default='preserve')
     i.add_argument('--output',help='Nombre real de salida; obligatorio con resolución explícita')
     i.add_argument('--vmware-legacy-drm',action='store_true',help='Workaround opcional AQ_NO_ATOMIC=1; solo Hyprland+vmware')
@@ -373,6 +398,9 @@ def parser():
     i.add_argument('--apply',action='store_true');i.add_argument('--overwrite',action='store_true',help='Respaldar y reemplazar ediciones posteriores al primer despliegue')
     u=subs.add_parser('uninstall');u.add_argument('--desktop',choices=['niri','hyprland','both'],required=True)
     for opt in ['apply','purge-packages','delete-backups','remove-shared','purge-cache','force']: u.add_argument('--'+opt,action='store_true')
+    u.add_argument('--keep-packages',dest='purge_packages',action='store_false',
+                   help='Retirar solo la configuración y conservar las sesiones del paquete.')
+    u.set_defaults(purge_packages=shutil.which('apt-get') is not None)
     usb=subs.add_parser('usb-power',help='Control optativo de suspensión USB de adaptadores Bluetooth')
     for opt in ['apply','persistent','restore']:usb.add_argument('--'+opt,action='store_true')
     subs.add_parser('doctor');e=subs.add_parser('export');e.add_argument('--output')
