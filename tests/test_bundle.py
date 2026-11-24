@@ -13,7 +13,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 from render import Layout, make_files
 from state import File, State
-from manage import apt_guard, parser, resolve_options, render_all, validate, display_text, stable_and_backports, uninstall
+from manage import apt_guard, parser, resolve_options, render_all, validate, display_text, stable_and_backports, uninstall, align_xkbcommon
 
 class BundleTests(unittest.TestCase):
     def setUp(self):
@@ -144,6 +144,21 @@ class BundleTests(unittest.TestCase):
                     if item.path.suffix not in ('.png',):
                         tokens=set(re.findall(rb'@([A-Z_]+)@',item.data))
                         self.assertLessEqual(tokens,{b'DEFAULT_AUDIO_SINK',b'DEFAULT_AUDIO_SOURCE'})
+    def test_xkbcommon_headers_match_existing_backport(self):
+        from subprocess import CompletedProcess
+        version='1.13.1-1~bpo13+1'
+        with patch('manage.subprocess.run',side_effect=[
+                CompletedProcess([],0,'installed '+version,''),
+                CompletedProcess([],0,'Version: '+version+'\n','')]):
+            self.assertEqual(align_xkbcommon(['foot','libxkbcommon-dev']),
+                             ['foot','libxkbcommon-dev='+version])
+        with patch('manage.subprocess.run',side_effect=[
+                CompletedProcess([],0,'installed '+version,''),
+                CompletedProcess([],100,'','unavailable')]):
+            with self.assertRaises(RuntimeError):align_xkbcommon(['libxkbcommon-dev'])
+        with patch('manage.subprocess.run',return_value=CompletedProcess([],0,'installed 1.7.0-2','')):
+            self.assertEqual(align_xkbcommon(['libxkbcommon-dev']),['libxkbcommon-dev'])
+
     def test_uninstall_preserves_preexisting_compositor(self):
         args=parser().parse_args(['uninstall','--desktop','niri','--purge-packages'])
         with patch('manage.Layout',return_value=self.layout), patch('manage.installed',return_value=True), patch('manage.call') as call:

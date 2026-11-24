@@ -150,6 +150,22 @@ def ensure_backports():
             raise RuntimeError(f'Repositorio personalizado en {dest}; se conserva. Revísalo manualmente.')
         State.replace(File(dest,b'deb https://deb.debian.org/debian trixie-backports main\n',system=True))
 
+def align_xkbcommon(packages):
+    """Conservar la biblioteca de backports del usuario al instalar sus headers."""
+    if 'libxkbcommon-dev' not in packages:
+        return list(packages)
+    result=subprocess.run(['dpkg-query','-W','-f=${db:Status-Status} ${Version}',
+                           'libxkbcommon0'],capture_output=True,text=True)
+    status, _, version=result.stdout.strip().partition(' ')
+    if result.returncode or status!='installed' or '~bpo' not in version:
+        return list(packages)
+    selector='libxkbcommon-dev='+version
+    available=subprocess.run(['apt-cache','show',selector],capture_output=True,text=True)
+    if available.returncode or 'Version: '+version not in available.stdout.splitlines():
+        raise RuntimeError(f'No está disponible {selector}, requerido para conservar libxkbcommon0 instalado. Revisa los índices de backports; no se degradará la biblioteca.')
+    print('Headers compatibles con la biblioteca existente: '+selector)
+    return [selector if p=='libxkbcommon-dev' else p for p in packages]
+
 def install_packages(args,profile,addons):
     release=os_release()
     if release.get('ID') not in ('ubuntu','fedora') and (release.get('ID')!='debian' or release.get('VERSION_ID')!='13'):
@@ -167,6 +183,7 @@ def install_packages(args,profile,addons):
         series=read_versions()['hyprland']['config_series']
         if not candidate or not re.match(r'(?:\d+:)?'+re.escape(series)+r'\.',candidate.group(1)):
             raise RuntimeError('La versión candidata de Hyprland no coincide con la serie validada; revisa versions.json y las plantillas antes de instalar.')
+    stable=align_xkbcommon(stable)
     call(['sudo','apt-get','--no-remove','install','-y',*stable])
     if backports: call(['sudo','apt-get','--no-remove','install','-y','-t','trixie-backports',*backports])
 
