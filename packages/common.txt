@@ -15,11 +15,7 @@ mako-notifier
 swaylock
 swayidle
 swaybg
-wl-clipboard
-grim
-slurp
 playerctl
-brightnessctl
 pipewire
 pipewire-pulse
 wireplumber
@@ -30,8 +26,6 @@ xdg-user-dirs
 xdg-utils
 gnome-keyring
 libpam-gnome-keyring
-thunar
-gvfs
 firefox-esr
 fonts-noto-color-emoji
 libgl1-mesa-dri

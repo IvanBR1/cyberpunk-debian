@@ -62,15 +62,7 @@ def profile_files():
     del modules['hyprland/workspaces']
     modules['custom/launcher'].update(format='󰣇  CYBER // DRIFTWM', **{'on-click':'fuzzel'})
     modules['custom/dashboard']['on-click'] = panel+' --toggle'
-    vmware_files = []
-    original = Path('/usr/share/applications/vmware-workstation.desktop')
-    if original.is_file() and Path('/usr/bin/vmware').is_file():
-        launcher = directory/'vmware-launch.py'
-        entry = original.read_text().replace('Exec=/usr/bin/vmware ', 'Exec=/usr/bin/python3 '+json.dumps(str(launcher))+' ',1)
-        data_home = Path(os.environ.get('XDG_DATA_HOME') or Path.home()/'.local/share')
-        vmware_files = [File(launcher,(assets/'vmware-launch.py').read_bytes()),
-                        File(data_home/'applications/vmware-workstation.desktop',entry.encode())]
-    return [*vmware_files,*[File(directory/'widgets'/name,(widgets/name).read_bytes())
+    return [*[File(directory/'widgets'/name,(widgets/name).read_bytes())
               for name in ('dashboard.py','metrics.py','media.py')],
             File(bar,json.dumps(modules,indent=2).encode()),
             File(foot_config,(ROOT/'themes/cyberpunk/common/foot/foot.ini').read_bytes()),

@@ -47,7 +47,7 @@ def resolve_options(args):
         if not re.fullmatch(r'[1-9]\d{2,4}x[1-9]\d{2,4}(?:@\d+(?:\.\d+)?)?',args.resolution): raise ValueError('Resolución inválida.')
         if not args.output or not re.fullmatch(r'[a-zA-Z0-9_.-]+',args.output): raise ValueError('Indica --output con el nombre del monitor de esta máquina.')
     addons=[] if args.addons=='none' else list(dict.fromkeys(args.addons.split(',')))
-    if set(addons)-{'office','widgets','clipboard','controls','bluetooth'}: raise ValueError('Complemento desconocido.')
+    if set(addons)-{'office','widgets','clipboard','controls','bluetooth','files'}: raise ValueError('Complemento desconocido.')
     if 'controls' in addons and args.desktop!='hyprland':
         raise ValueError('El complemento controls requiere --desktop hyprland.')
     return profile,addons
@@ -306,7 +306,8 @@ def uninstall(args):
     layout=Layout();state=State(layout.state);chosen=desktops(args.desktop)
     last=not any(state.load(d)['files'] for d in ('niri','hyprland') if d not in chosen)
     tracked=state.load('shared').get('packages',[]) if args.purge_packages and args.remove_shared and last else []
-    packages=list(dict.fromkeys([p for d in chosen for p in EXCLUSIVE[d] if installed(p)]+[p for p in tracked if installed(p)])) if args.purge_packages else []
+    owned=set(state.load('shared').get('packages',[]))
+    packages=list(dict.fromkeys([p for d in chosen for p in EXCLUSIVE[d] if p in owned and installed(p)]+[p for p in tracked if installed(p)])) if args.purge_packages else []
     docs={d:state.load(d) for d in chosen}
     for d,doc in docs.items():
         print(d+':')
@@ -388,7 +389,7 @@ def parser():
     i=subs.add_parser('install');i.add_argument('--desktop',choices=['niri','hyprland','both'],required=True)
     i.add_argument('--profile',choices=['auto','generic','vmware'],default='auto')
     i.add_argument('--theme',choices=['cyberpunk','plain'],default='cyberpunk')
-    i.add_argument('--addons',default='office,widgets,clipboard,bluetooth',help='office,widgets,clipboard,bluetooth,controls o none')
+    i.add_argument('--addons',default='office,widgets,clipboard,bluetooth',help='office,widgets,clipboard,bluetooth,controls,files o none')
     i.add_argument('--keyboard',default='latam');i.add_argument('--resolution',default='preserve')
     i.add_argument('--output',help='Nombre real de salida; obligatorio con resolución explícita')
     i.add_argument('--vmware-legacy-drm',action='store_true',help='Workaround opcional AQ_NO_ATOMIC=1; solo Hyprland+vmware')

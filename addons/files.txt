@@ -1,0 +1,3 @@
+# Opcional: gestor de archivos cuando el sistema no tiene uno.
+thunar
+gvfs

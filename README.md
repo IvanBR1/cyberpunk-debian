@@ -366,11 +366,29 @@ Cada nuevo respaldo reemplaza el punto de recuperación de ese perfil. El
 respaldo abarca los archivos de su manifiesto, no los compartidos ni los
 archivos creados por otras aplicaciones. Vuelve a entrar en la sesión para
 cargar la configuración restaurada.
-### Extra opcional para VMware Workstation
+### Dependencias y aplicaciones opcionales
 
-En el equipo anfitrión con Workstation instalado, `./vmware-modules.sh`
-muestra el plan para el kernel en uso. `./vmware-modules.sh --apply` instala
-las dependencias con APT (Debian/Ubuntu) o DNF (Fedora) y compila los módulos
-de VMware. Puedes repetirlo después de actualizar el kernel. Es independiente
-del compositor y de VMware Tools dentro de una máquina virtual. Las cabeceras
-y los módulos pertenecen al host y se comparten entre sesiones.
+El instalador usa el gestor de archivos predeterminado del sistema mediante
+`xdg-open` (Super+E). No instala Thunar ni cambia asociaciones existentes.
+Si no tienes gestor, añade `files` a `--addons` para instalar Thunar y GVfs;
+si tienes Nautilus, Dolphin u otro, conserva el que ya usas.
+El selector de archivos de las aplicaciones se atiende por GTK o los portales;
+la configuración conserva `xdg-desktop-portal-gtk` como FileChooser.
+
+`grim` y `slurp` pertenecen a Hyprland. Niri usa su captura nativa.
+`lxpolkit` sigue siendo común: Niri lo inicia mediante XDG autostart y
+Hyprland mediante el servicio de sesión.
+`wl-clipboard` se solicita por el historial opcional o la captura de Hyprland;
+`brightnessctl` pertenece a `controls`. Los servicios de barra, notificaciones,
+bloqueo, inactividad y audio siguen siendo parte de la sesión configurada.
+Wayland no sustituye por sí solo esos servicios.
+
+VMware se limita al perfil de **invitado** (`open-vm-tools` y
+`open-vm-tools-desktop`). El kit no compila módulos del anfitrión ni modifica
+el lanzador de Workstation. Los archivos de integraciones anteriores que estén
+registrados en un manifiesto se restauran al desinstalar ese perfil.
+
+Estos cambios afectan instalaciones futuras: no eliminan paquetes existentes.
+La purga mantiene su simulación APT y no ejecuta autoremove. Los paquetes
+compartidos registrados se consideran al retirar el último entorno con
+`--remove-shared`; revisa siempre el plan antes de `--apply`.

@@ -15,7 +15,7 @@ environment {
 binds {
     Mod+Return { spawn "python3" @RUNTIME_KDL@ "niri" "terminal"; }
     Mod+D { spawn "python3" @RUNTIME_KDL@ "niri" "launcher"; }
-    Mod+E { spawn "thunar"; }
+    Mod+E { spawn "xdg-open" @HOME_KDL@; }
     Mod+B { spawn "@BROWSER@"; }
     Mod+L { spawn "python3" @RUNTIME_KDL@ "niri" "lock"; }
     Mod+Q { close-window; }

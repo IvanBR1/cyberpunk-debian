@@ -40,6 +40,8 @@ def make_files(root, layout, desktop, profile, theme, addons, keyboard, resoluti
     files=[]
     browser = 'firefox' if freedesktop_os_release()['ID'] in ('fedora','ubuntu') else 'firefox-esr'
     values['BROWSER'] = browser
+    values['HOME_KDL'] = json.dumps(str(layout.home))
+    values['HOME_SHELL'] = shlex.quote(str(layout.home))
     def add(path, data, mode=0o644, system=False):
         files.append(File(Path(path),data.encode() if isinstance(data,str) else data,mode,system))
     add(layout.runtime,(root/'scripts/runtime.py').read_bytes(),0o755)

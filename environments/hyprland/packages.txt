@@ -3,3 +3,7 @@ hyprland
 hyprland-guiutils
 xdg-desktop-portal-hyprland
 xwayland
+# Captura regional usada por esta plantilla.
+grim
+slurp
+wl-clipboard

@@ -13,7 +13,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 from render import Layout, make_files
 from state import File, State
-from manage import apt_guard, parser, resolve_options, render_all, validate, display_text, stable_and_backports
+from manage import apt_guard, parser, resolve_options, render_all, validate, display_text, stable_and_backports, uninstall
 
 class BundleTests(unittest.TestCase):
     def setUp(self):
@@ -69,6 +69,24 @@ class BundleTests(unittest.TestCase):
         no_addons=self.options('--addons','none')
         stable,_=stable_and_backports(no_addons,'generic',resolve_options(no_addons)[1])
         self.assertNotIn('blueman',stable)
+    def test_packages_follow_session_features(self):
+        for desktop in ('niri','hyprland'):
+            args=self.options('--desktop',desktop,'--addons','none')
+            stable,backports=stable_and_backports(args,'generic',[])
+            packages=set(stable+backports)
+            self.assertIn('lxpolkit',packages)
+            self.assertNotIn('thunar',packages)
+            self.assertNotIn('gvfs',packages)
+            for package in ('grim','slurp','wl-clipboard'):
+                self.assertEqual(package in packages,desktop=='hyprland')
+        args=self.options('--addons','files')
+        stable,_=stable_and_backports(args,'generic',['files'])
+        self.assertIn('thunar',stable)
+        for fs in self.render().values():
+            conf=next(f.data for f in fs if f.path.name in ('config.kdl','hyprland.conf'))
+            self.assertIn(b'xdg-open',conf)
+            self.assertNotIn(b'thunar',conf)
+
     def test_generic_has_no_vmware_environment_or_monitor(self):
         for fs in self.render().values():
             text='\n'.join(f.data.decode(errors='ignore') for f in fs if f.path.suffix in ('.conf','.kdl') or '.local/bin' in str(f.path))
@@ -126,6 +144,12 @@ class BundleTests(unittest.TestCase):
                     if item.path.suffix not in ('.png',):
                         tokens=set(re.findall(rb'@([A-Z_]+)@',item.data))
                         self.assertLessEqual(tokens,{b'DEFAULT_AUDIO_SINK',b'DEFAULT_AUDIO_SOURCE'})
+    def test_uninstall_preserves_preexisting_compositor(self):
+        args=parser().parse_args(['uninstall','--desktop','niri','--purge-packages'])
+        with patch('manage.Layout',return_value=self.layout), patch('manage.installed',return_value=True), patch('manage.call') as call:
+            uninstall(args)
+        call.assert_not_called()
+
     def test_apt_refuses_shared_dependency_removal(self):
         with self.assertRaises(RuntimeError): apt_guard('Purg hyprland [0.55]\nRemv libwayland-client0 [1]\n',['hyprland'])
     def test_apt_allows_only_selected_packages(self): apt_guard('Purg hyprland [0.55]\n',['hyprland'])
